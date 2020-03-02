@@ -1,7 +1,9 @@
 #ifndef ICONS_H
 #define ICONS_H
 
-unsigned char wifi1_icon16x16[] =
+#include <inttypes.h>
+
+static unsigned char wifi1_icon16x16[] =
 {
 	0b00000000, 0b00000000, //
 	0b00000111, 0b11100000, //      ######
@@ -21,7 +23,7 @@ unsigned char wifi1_icon16x16[] =
 	0b00000000, 0b00000000, //
 };
 
-unsigned char wifi2_icon16x16[] =
+static unsigned char wifi2_icon16x16[] =
 {
 	0b00000000, 0b00000000, //
 	0b00000000, 0b00000000, //
@@ -41,7 +43,7 @@ unsigned char wifi2_icon16x16[] =
 	0b00000000, 0b00000000, //
 };
 
-unsigned char wifi3_icon16x16[] =
+static unsigned char wifi3_icon16x16[] =
 {
 	0b00000000, 0b00000000, //
 	0b00000000, 0b00000000, //
