@@ -4,7 +4,6 @@
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
 
-#include "icons.h"
 #include "commom.h"
 
 void vTaskInput(void *pvParameters) {

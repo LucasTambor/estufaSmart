@@ -95,7 +95,10 @@ void DisplayControl(char command) {
 //***************************************************************************************************************************
 
 uint8_t displayHomeState(char command){
+  char buffer[32] = {0};
   uint32_t local_rssi = 0;
+  bool local_op_state = 0;
+  bool local_light_state = 0;
 
   display.setCursor(0, 4);
 
@@ -107,7 +110,21 @@ uint8_t displayHomeState(char command){
   local_rssi = rssi;
   xSemaphoreGive( xWifiRssiMutex );
 
+  xSemaphoreTake( xLightStateMutex, portMAX_DELAY );
+  local_light_state = light_state;
+  xSemaphoreGive( xLightStateMutex );
+
   setWifiIcon(local_rssi);
+  setMqttIcon(mqttState);
+  setLighIcon(local_light_state);
+
+  xSemaphoreTake( xOpStateMutex, portMAX_DELAY );
+  local_op_state = operation_state;
+  xSemaphoreGive( xOpStateMutex );
+
+  sprintf(buffer, "%s", local_op_state ? "manual" : "auto");
+  display.setCursor(50, 57);
+  display.print(buffer); // Adiciona o texto à lista de escrita do display
 
   switch(command) {
     case '1':
@@ -159,7 +176,7 @@ uint8_t displayHomeState(char command){
 
 uint8_t displaylighMenuState(char command){
 
-  display.setCursor(0, 4);
+  display.setCursor(6, 4);
 
   display.print("Configuracao de Luz");
   switch(command) {
@@ -253,5 +270,19 @@ void setWifiIcon(int32_t rssi) {
   }
   else if(rssi < -80 ) { // Medium Quality
     display.drawBitmap(SCREEN_WIDTH-16, 0, wifi3_icon16x16, 16, 16, 1);
+  }
+}
+
+void setMqttIcon(bool state) {
+  if(state){
+    display.drawBitmap(SCREEN_WIDTH-36, 0, heart_icon16x16, 16, 16, 1);
+  }
+}
+
+void setLighIcon(bool state) {
+  if(state) {
+    display.drawBitmap(0, 30, bulb_on_icon16x16, 16, 16, 1);
+  }else {
+    display.drawBitmap(0, 30, bulb_off_icon16x16, 16, 16, 1);
   }
 }

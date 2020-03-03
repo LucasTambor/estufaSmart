@@ -23,9 +23,13 @@ enum {
   DISPLAY_OPERATION_MODE_CONF,
 };
 
+
 //**********************************************************************************************************
 
 void setWifiIcon(int32_t rssi);
+void setMqttIcon(bool state);
+void setLighIcon(bool state);
+
 void DisplayControl(char command);
 uint8_t displayHomeState(char command);
 uint8_t displaylighMenuState(char command);
