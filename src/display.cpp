@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -12,6 +13,10 @@
 #include "display.h"
 
 static Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
+String schedule_light_ON = "";
+String schedule_light_OFF = "";
 
 void vTaskDisplay(void *pvParameters) {
   (void) pvParameters;
@@ -39,7 +44,7 @@ void vTaskDisplay(void *pvParameters) {
 
   while(1) {
     if(xQueueReceive(xCommandQueue, &local_command, pdMS_TO_TICKS(50)) != pdTRUE){
-      local_command = '0';
+      local_command = ' ';
     }
 
     display.clearDisplay(); // Limpa o conteúdo do display
@@ -175,13 +180,24 @@ uint8_t displayHomeState(char command){
 //***************************************************************************************************************************
 
 uint8_t displaylighMenuState(char command){
-
+  //title
   display.setCursor(6, 4);
-
   display.print("Configuracao de Luz");
+
+  //body
+  display.setCursor(6, 30);
+  display.println("1. Schedule turn ON light");
+  display.println("2. Schedule turn OFF light");
+
   switch(command) {
     case '1':
+      return DISPLAY_LIGHT_ON_CONF;
+      break;
+
     case '2':
+      return DISPLAY_LIGHT_OFF_CONF;
+      break;
+
     case '3':
     case '4':
     case '5':
@@ -228,11 +244,160 @@ uint8_t displaylighMenuState(char command){
 //***************************************************************************************************************************
 
 uint8_t displayLightOnConfState(char command) {
-  (void) command;
+  char buffer[32] = {0};
+  static uint8_t char_count = 0;
+  static String temp_schedule = "";
+  display.setTextSize(1);
+
+  //title
+  display.setCursor(6, 4);
+  display.print("Schedule light ON");
+
+  //body
+  display.setCursor(6, 30);
+
+  sprintf(buffer, "Actual Value: %s", schedule_light_ON.c_str() );
+  display.println(buffer);
+
+  display.setCursor(6, 40);
+  display.print("New Value: ");
+  display.print(temp_schedule);
+
+  switch(command) {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '0':
+      if(char_count < 4) {
+        char_count++;
+        temp_schedule += command;
+        if(char_count == 2) {
+          temp_schedule += ':';
+        }
+      }
+      return DISPLAY_LIGHT_ON_CONF;
+      break;
+    case 'a':
+    case 'A':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'b':
+    case 'B':
+      return DISPLAY_HOME;
+
+      break;
+    case 'c':
+    case 'C':
+      return DISPLAY_HOME;
+
+      break;
+    case 'd':
+    case 'D':
+      return DISPLAY_HOME;
+
+      break;
+    case '#':
+      return DISPLAY_HOME;
+
+      break;
+    case '*': //Save and return
+      schedule_light_ON = temp_schedule;
+      Serial.print("New Schedule: ");Serial.println(schedule_light_ON);
+      char_count = 0;
+      temp_schedule = "";
+      return DISPLAY_LIGHT_MENU;
+
+      break;
+    default:
+      return DISPLAY_LIGHT_ON_CONF;
+
+      break;
+  }
+
 }
 
 uint8_t displayLightOFFConfState(char command) {
-  (void) command;
+  char buffer[32] = {0};
+  static uint8_t char_count = 0;
+  static String temp_schedule = "";
+  display.setTextSize(1);
+
+  //title
+  display.setCursor(6, 4);
+  display.print("Schedule light OFF");
+
+  //body
+  display.setCursor(6, 30);
+
+  sprintf(buffer, "Actual Value: %s", schedule_light_OFF.c_str() );
+  display.println(buffer);
+
+  display.setCursor(6, 40);
+  display.print("New Value: ");
+  display.print(temp_schedule);
+
+  switch(command) {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '0':
+      if(char_count < 4) {
+        char_count++;
+        temp_schedule += command;
+        if(char_count == 2) {
+          temp_schedule += ':';
+        }
+      }
+      return DISPLAY_LIGHT_OFF_CONF;
+      break;
+    case 'a':
+    case 'A':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'b':
+    case 'B':
+      return DISPLAY_HOME;
+
+      break;
+    case 'c':
+    case 'C':
+      return DISPLAY_HOME;
+
+      break;
+    case 'd':
+    case 'D':
+      return DISPLAY_HOME;
+
+      break;
+    case '#':
+      return DISPLAY_HOME;
+
+      break;
+    case '*': //Save and return
+      schedule_light_OFF = temp_schedule;
+      Serial.print("New Schedule: ");Serial.println(schedule_light_OFF);
+      char_count = 0;
+      temp_schedule = "";
+      return DISPLAY_LIGHT_MENU;
+
+      break;
+    default:
+      return DISPLAY_LIGHT_OFF_CONF;
+
+      break;
+  }
 }
 
 uint8_t displaySetPointMenuState(char command) {
@@ -260,6 +425,7 @@ uint8_t displayOperationModeState(char command) {
 }
 
 //***************************************************************************************************************************
+//Set ICON Functions
 
 void setWifiIcon(int32_t rssi) {
   if(rssi >= -60) { // High Quality
@@ -286,3 +452,5 @@ void setLighIcon(bool state) {
     display.drawBitmap(0, 30, bulb_off_icon16x16, 16, 16, 1);
   }
 }
+
+//***************************************************************************************************************************

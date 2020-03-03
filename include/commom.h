@@ -27,6 +27,8 @@ extern bool mqttState;
 
 extern bool operation_state;
 extern bool light_state;
+extern String schedule_light_ON;
+extern String schedule_light_OFF;
 
 //********************************************************************************************************
 
