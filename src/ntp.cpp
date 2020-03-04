@@ -21,6 +21,8 @@ const int taxaDeAtualizacao = 1800000; // Taxa de atualização do servidor NTP 
 WiFiUDP ntpUDP; // Declaração do Protocolo UDP
 NTPClient timeClient(ntpUDP, servidorNTP, fusoHorario, 60000);
 
+String horario;
+
 void vTaskNTP(void *pvParameters) {
   (void) pvParameters;
 

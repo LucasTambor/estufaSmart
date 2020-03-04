@@ -15,6 +15,7 @@ extern SemaphoreHandle_t xWifiMutex;
 
 extern SemaphoreHandle_t xOpStateMutex;
 extern SemaphoreHandle_t xLightStateMutex;
+extern SemaphoreHandle_t xLightScheduleMutex;
 
 extern bool wifi_ready;
 extern uint32_t rssi;
@@ -39,5 +40,6 @@ extern void vTaskInput(void *pvParameters );
 extern void vTaskNTP(void *pvParameters);
 extern void vTaskDisplay(void *pvParameters);
 extern void vTaskMqtt(void *pvParameters);
+extern void vTaskLight(void *pvParameters);
 
 #endif //_COMMOM_H_

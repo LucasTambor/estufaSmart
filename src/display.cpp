@@ -308,7 +308,6 @@ uint8_t displayLightOnConfState(char command) {
       break;
     case '*': //Save and return
       schedule_light_ON = temp_schedule;
-      Serial.print("New Schedule: ");Serial.println(schedule_light_ON);
       char_count = 0;
       temp_schedule = "";
       return DISPLAY_LIGHT_MENU;

@@ -14,12 +14,17 @@
 #include "input.h"
 #include "ntp.h"
 #include "mqtt.h"
+#include "light.h"
 
 //**********************************************************************************************************
 
-TaskHandle_t xTaskInputHandle,xTaskDisplayHandle, xTaskNTPHandle, xTaskMqttHandle;
-
 QueueHandle_t xCommandQueue;
+
+TaskHandle_t xTaskInputHandle;
+TaskHandle_t xTaskDisplayHandle;
+TaskHandle_t xTaskNTPHandle;
+TaskHandle_t xTaskMqttHandle;
+TaskHandle_t xTaskLightHandle;
 
 SemaphoreHandle_t xWifiRssiMutex;
 SemaphoreHandle_t xHorarioMutex;
@@ -27,11 +32,12 @@ SemaphoreHandle_t xWifiReadyMutex;
 SemaphoreHandle_t xWifiMutex;
 SemaphoreHandle_t xOpStateMutex;
 SemaphoreHandle_t xLightStateMutex;
+SemaphoreHandle_t xLightScheduleMutex;
 
 bool wifi_ready = 0;
 uint32_t rssi = 0;
 
-String horario;
+
 
 
 
@@ -49,11 +55,13 @@ void setup()
   xWifiReadyMutex = xSemaphoreCreateMutex();
   xOpStateMutex = xSemaphoreCreateMutex();
   xLightStateMutex = xSemaphoreCreateMutex();
+  xLightScheduleMutex = xSemaphoreCreateMutex();
 
   xTaskCreatePinnedToCore(vTaskNTP,  "TaskNTP",  configMINIMAL_STACK_SIZE + 2048,  NULL,  1,  &xTaskNTPHandle, PRO_CPU_NUM);
-  xTaskCreatePinnedToCore(vTaskMqtt,  "TaskMqtt",  configMINIMAL_STACK_SIZE + 2048,  NULL,  1,  &xTaskMqttHandle, PRO_CPU_NUM);
+  xTaskCreatePinnedToCore(vTaskMqtt,  "TaskMqtt",  configMINIMAL_STACK_SIZE + 4096,  NULL,  1,  &xTaskMqttHandle, PRO_CPU_NUM);
   xTaskCreatePinnedToCore(vTaskDisplay,  "TaskDisplay",  configMINIMAL_STACK_SIZE + 1024,  NULL,  1,  &xTaskDisplayHandle, APP_CPU_NUM);
   xTaskCreatePinnedToCore(vTaskInput,  "TaskInput",  configMINIMAL_STACK_SIZE + 1024,  NULL,  1,  &xTaskInputHandle, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(vTaskLight,  "TaskLight",  configMINIMAL_STACK_SIZE + 1024,  NULL,  2,  &xTaskLightHandle, APP_CPU_NUM);
 }
 
 void loop()

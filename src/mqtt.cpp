@@ -29,10 +29,14 @@ bool light_state = 0;
 //get
 const char* mqttTopicSubOpState ="param/get/state";
 const char* mqttTopicSubLightState ="state/get/light";
+const char* mqttTopicSubLightOnParam ="param/get/light_on";
+const char* mqttTopicSubLightOffParam ="param/get/light_off";
 
 //set
 const char* mqttTopicPubOpState ="param/set/state";
 const char* mqttTopicPubLightState ="state/set/light";
+const char* mqttTopicPubLightOnParam ="param/set/light_on";
+const char* mqttTopicPubLightOffParam ="param/set/light_off";
 
 /*Implementação da Task MQTT */
 void vTaskMqtt(void *pvParameters){
@@ -71,6 +75,12 @@ void vTaskMqtt(void *pvParameters){
     xSemaphoreGive( xLightStateMutex );
     client.publish(mqttTopicPubLightState, buffer);
 
+    //Light On/Off Param
+    xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    client.publish(mqttTopicPubLightOnParam, schedule_light_ON.c_str());
+    client.publish(mqttTopicPubLightOffParam, schedule_light_OFF.c_str());
+    xSemaphoreGive( xLightScheduleMutex );
+
     client.loop();
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
@@ -83,6 +93,7 @@ void MqttReconect() {
   while (!client.connected()) {
 
     if (client.connect("ESP32Client", mqttUser, mqttPassword )) {
+      Serial.println("Caiu mas VOltou");
       subscribeToTopics();
     } else {
       vTaskDelay(pdMS_TO_TICKS(100));
@@ -110,11 +121,23 @@ void SubCallback(char* topic, byte* payload, unsigned int length) {
     operation_state = atoi(strMSG.c_str());
     xSemaphoreGive( xOpStateMutex );
   }
+  if(!strcmp(topic, mqttTopicSubLightOnParam)) { // Topico light on Param
+    xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    schedule_light_ON = strMSG;
+    xSemaphoreGive( xLightScheduleMutex );
+  }
+  if(!strcmp(topic, mqttTopicSubLightOffParam)) { // Topico light off Param
+    xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    schedule_light_OFF = strMSG;
+    xSemaphoreGive( xLightScheduleMutex );
+  }
 
-  if(!strcmp(topic, mqttTopicSubLightState)) { // Topico Operation State
-    xSemaphoreTake( xLightStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
-    light_state = atoi(strMSG.c_str());
-    xSemaphoreGive( xLightStateMutex );
+  if(operation_state) {
+    if(!strcmp(topic, mqttTopicSubLightState)) { // Topico Light State
+      xSemaphoreTake( xLightStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+      light_state = atoi(strMSG.c_str());
+      xSemaphoreGive( xLightStateMutex );
+    }
   }
 
 }
@@ -122,5 +145,6 @@ void SubCallback(char* topic, byte* payload, unsigned int length) {
 void subscribeToTopics() {
   client.subscribe(mqttTopicSubOpState);
   client.subscribe(mqttTopicSubLightState);
-
+  client.subscribe(mqttTopicSubLightOnParam);
+  client.subscribe(mqttTopicSubLightOffParam);
 }
