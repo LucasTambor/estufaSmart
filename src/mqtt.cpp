@@ -13,10 +13,14 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 /* configuraçãoes da REDE e broker MQTT*/
-const char* mqttServer = "mqtt.eclipse.org";
-const int mqttPort = 1883;
-const char* mqttUser = "lucastambor";
-const char* mqttPassword = "lucastambortbm";
+const char* mqttServer = "postman.cloudmqtt.com";
+const int mqttPort = 17936;
+const char* mqttUser = "mggphudi";
+const char* mqttPassword = "wauG8UCgVkct";
+// const char* mqttServer = "mqtt.eclipse.org";
+// const int mqttPort = 1883;
+// const char* mqttUser = "lucastambor";
+// const char* mqttPassword = "lucastambortbm";
 
 //**********************************************************************************************************
 
@@ -82,7 +86,7 @@ void vTaskMqtt(void *pvParameters){
     xSemaphoreGive( xLightScheduleMutex );
 
     client.loop();
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(10000));
   }
 }
 
