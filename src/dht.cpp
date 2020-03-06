@@ -13,14 +13,12 @@
 float temperature_value = 0;
 uint8_t humidity_value = 0;
 
-/* CONECTANDO DHT*/
-// DHT_Unified dht(DHTPIN, DHTTYPE);
-
+static gpio_num_t dht_gpio;
+static int64_t last_read_time = -2000000;
+dht_t last_read;
 
 void vTaskDHT(void *pvParameters) {
   (void) pvParameters;
-  // sensor_t sensor;
-  // sensors_event_t event;
   DHT11_init((gpio_num_t)4);
 
   bool init_task = 0;
@@ -34,54 +32,19 @@ void vTaskDHT(void *pvParameters) {
 
   while(1)
   {
-    // dht.temperature().getSensor(&sensor);
-
-    // dht.humidity().getSensor(&sensor);
-
-    // dht.temperature().getEvent(&event);
-    // if (isnan(event.temperature)) {
-    //   Serial.println("Erro ao ler a temperatura");
-    // }
-    // else {
-    //   xSemaphoreTake( xTemperatureMutex, pdMS_TO_TICKS(portMAX_DELAY) );
-    //   temperature_value = event.temperature;
-    //   xSemaphoreGive( xTemperatureMutex );
-    //   Serial.print("Temperatura: "); Serial.println(temperature_value);
-
-    // }
-
-    // dht.humidity().getEvent(&event);
-    // if (isnan(event.relative_humidity)) {
-    //   Serial.println("Erro ao ler a Umidade");
-    // }
-    // else {
-    //   xSemaphoreTake( xHumidityMutex, pdMS_TO_TICKS(portMAX_DELAY) );
-    //   humidity_value = event.relative_humidity;
-    //   xSemaphoreGive( xHumidityMutex );
-    //   Serial.print("Umidade: "); Serial.println(humidity_value);
-
-    // }
       dht_t dht_value = DHT11_read();
       if(dht_value.status == DHT11_OK)
       {
-        Serial.print("Umidade: "); Serial.println(dht_value.humidity);
-        Serial.print("Temp: "); Serial.println(dht_value.temperature);
-
+        temperature_value = dht_value.temperature;
+        humidity_value = dht_value.humidity;
       }else{
-          Serial.print("ERROR: "); Serial.println(dht_value.status);
-
+          Serial.print("DHT ERROR: "); Serial.println(dht_value.status);
       }
 
-      // vTaskDelay(READ_DHT_PERIOD/portTICK_PERIOD_MS);
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(READ_DHT_PERIOD_MS));
   }
-
-  // }
 }
 
-static gpio_num_t dht_gpio;
-static int64_t last_read_time = -2000000;
-dht_t last_read;
 
 
 //*******************************************************************************************

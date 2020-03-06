@@ -20,6 +20,7 @@ extern SemaphoreHandle_t xMotorSpeedMutex;
 extern SemaphoreHandle_t xMotorStateMutex;
 extern SemaphoreHandle_t xTemperatureMutex;
 extern SemaphoreHandle_t xHumidityMutex;
+extern SemaphoreHandle_t xHumidifierMutex;
 
 extern bool wifi_ready;
 extern uint32_t rssi;
@@ -33,6 +34,8 @@ extern bool mqttState;
 extern bool operation_mode;
 extern bool light_state;
 extern bool motor_state;
+extern bool humidifier_state;
+
 extern String schedule_light_ON;
 extern String schedule_light_OFF;
 extern uint8_t temperature_set_point;

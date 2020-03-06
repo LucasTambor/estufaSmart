@@ -29,6 +29,8 @@ enum {
 void setWifiIcon(int32_t rssi);
 void setMqttIcon(bool state);
 void setLighIcon(bool state);
+void setMotorIcon(bool state);
+void setHumidifierIcon(bool state);
 
 void DisplayControl(char command);
 uint8_t displayHomeState(char command);

@@ -29,6 +29,8 @@ bool mqttState = 0;
 bool operation_mode = 0;
 bool light_state = 0;
 bool motor_state = 0;
+bool humidifier_state = 0;
+
 uint8_t temperature_set_point = 0;
 uint8_t humidity_set_point = 0;
 uint8_t motor_speed = 0;
@@ -38,6 +40,7 @@ uint8_t motor_speed = 0;
 //get
 const char* mqttTopicSubLightState ="state/get/light";
 const char* mqttTopicSubMotorState ="state/get/motor";
+const char* mqttTopicSubHumState ="state/get/hum";
 const char* mqttTopicSubOpState ="param/get/state";
 const char* mqttTopicSubLightOnParam ="param/get/light_on";
 const char* mqttTopicSubLightOffParam ="param/get/light_off";
@@ -48,6 +51,7 @@ const char* mqttTopicSubMotorSpeedParam ="param/get/motor_speed";
 //set
 const char* mqttTopicPubLightState ="state/set/light";
 const char* mqttTopicPubMotorState ="state/set/motor";
+const char* mqttTopicPubHumState ="state/set/hum";
 const char* mqttTopicPubOpState ="param/set/state";
 const char* mqttTopicPubLightOnParam ="param/set/light_on";
 const char* mqttTopicPubLightOffParam ="param/set/light_off";
@@ -97,6 +101,12 @@ void vTaskMqtt(void *pvParameters){
     sprintf(buffer, "%d", motor_state);
     xSemaphoreGive( xMotorStateMutex );
     client.publish(mqttTopicPubMotorState, buffer);
+
+    //Humidifier State
+    xSemaphoreTake( xHumidifierMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    sprintf(buffer, "%d", humidifier_state);
+    xSemaphoreGive( xHumidifierMutex );
+    client.publish(mqttTopicPubHumState, buffer);
 
     //Light On/Off Param
     xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
@@ -208,6 +218,13 @@ void SubCallback(char* topic, byte* payload, unsigned int length) {
       saveToEeprom(MOTOR_STATE_ADDR, motor_state);
       xSemaphoreGive( xMotorStateMutex );
     }
+
+    if(!strcmp(topic, mqttTopicSubHumState)) { // Topico Humidifier State
+      xSemaphoreTake( xHumidifierMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+      humidifier_state = atoi(strMSG.c_str());
+      saveToEeprom(HUMIDIFIER_STATE_ADDR, humidifier_state);
+      xSemaphoreGive( xHumidifierMutex );
+    }
   }
 
 }
@@ -221,4 +238,5 @@ void subscribeToTopics() {
   client.subscribe(mqttTopicSubHumSetParam);
   client.subscribe(mqttTopicSubMotorSpeedParam);
   client.subscribe(mqttTopicSubMotorState);
+  client.subscribe(mqttTopicSubHumState);
 }

@@ -104,32 +104,60 @@ uint8_t displayHomeState(char command){
   uint32_t local_rssi = 0;
   bool local_op_state = 0;
   bool local_light_state = 0;
+  bool local_motor_state = 0;
+  bool local_hum_state = 0;
 
   display.setCursor(0, 4);
-
+  // Time
   xSemaphoreTake( xHorarioMutex, portMAX_DELAY );
-  display.print(horario); // Adiciona o texto à lista de escrita do display
+  display.print(horario); 
   xSemaphoreGive( xHorarioMutex );
 
+  //RSSI
   xSemaphoreTake( xWifiRssiMutex, portMAX_DELAY );
   local_rssi = rssi;
   xSemaphoreGive( xWifiRssiMutex );
 
+  //Light
   xSemaphoreTake( xLightStateMutex, portMAX_DELAY );
   local_light_state = light_state;
   xSemaphoreGive( xLightStateMutex );
 
+  //Mqtt
   setWifiIcon(local_rssi);
   setMqttIcon(mqttState);
   setLighIcon(local_light_state);
-
+  
+  //Op Mode
   xSemaphoreTake( xOpStateMutex, portMAX_DELAY );
   local_op_state = operation_mode;
   xSemaphoreGive( xOpStateMutex );
-
   sprintf(buffer, "%s", local_op_state ? "manual" : "auto");
   display.setCursor(50, 57);
-  display.print(buffer); // Adiciona o texto à lista de escrita do display
+  display.print(buffer); 
+
+  //Motor State
+  xSemaphoreTake( xMotorStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+  local_motor_state = motor_state;
+  xSemaphoreGive( xMotorStateMutex );
+  setMotorIcon(local_motor_state);
+
+  //Humidifier State
+  xSemaphoreTake( xHumidifierMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+  local_hum_state = humidifier_state;
+  xSemaphoreGive( xHumidifierMutex );
+  setHumidifierIcon(local_hum_state);
+
+  
+  //Temperature
+  display.setCursor(0, 57);
+  sprintf(buffer, "%2.2fC", temperature_value);
+  display.print(buffer); 
+
+  //Humidity
+  display.setCursor(SCREEN_WIDTH - 20, 57);
+  sprintf(buffer, "%d%%", humidity_value);
+  display.print(buffer); 
 
   switch(command) {
     case '1':
@@ -573,7 +601,7 @@ uint8_t displaySetPointHumidityConfState(char command) {
   //body
   display.setCursor(6, 30);
 
-  sprintf(buffer, "Actual Value: %d \%", humidity_set_point );
+  sprintf(buffer, "Actual Value: %d %%", humidity_set_point );
   display.println(buffer);
 
   display.setCursor(6, 40);
@@ -713,7 +741,7 @@ uint8_t displayMotorSpeedMenuState(char command) {
   //body
   display.setCursor(6, 30);
 
-  sprintf(buffer, "Actual Value: %d \%", motor_speed );
+  sprintf(buffer, "Actual Value: %d %%", motor_speed );
   display.println(buffer);
 
   display.setCursor(6, 40);
@@ -868,15 +896,11 @@ void setWifiIcon(int32_t rssi) {
   }
 }
 
-//***************************************************************************************************************************
-
 void setMqttIcon(bool state) {
   if(state){
     display.drawBitmap(SCREEN_WIDTH-36, 0, heart_icon16x16, 16, 16, 1);
   }
 }
-
-//***************************************************************************************************************************
 
 void setLighIcon(bool state) {
   if(state) {
@@ -886,4 +910,18 @@ void setLighIcon(bool state) {
   }
 }
 
+void setMotorIcon(bool state) {
+  if(state) {
+    display.drawBitmap(20, 30, motor_on_icon16x16, 16, 16, 1);
+  }else {
+    display.drawBitmap(20, 30, motor_off_icon16x16, 16, 16, 1);
+  }
+}
+
+void setHumidifierIcon(bool state) {
+  if(state) {
+    display.drawBitmap(40, 30, humidity_on_icon16x16, 16, 16, 1);
+  }else {
+    display.drawBitmap(40, 30, humidity_off_icon16x16, 16, 16, 1);
+  }}
 //***************************************************************************************************************************

@@ -42,6 +42,7 @@ SemaphoreHandle_t xMotorSpeedMutex;
 SemaphoreHandle_t xMotorStateMutex;
 SemaphoreHandle_t xTemperatureMutex;
 SemaphoreHandle_t xHumidityMutex;
+SemaphoreHandle_t xHumidifierMutex;
 
 bool wifi_ready = 0;
 uint32_t rssi = 0;
@@ -70,6 +71,7 @@ void setup()
   xMotorStateMutex = xSemaphoreCreateMutex();
   xTemperatureMutex = xSemaphoreCreateMutex();
   xHumidityMutex = xSemaphoreCreateMutex();
+  xHumidifierMutex = xSemaphoreCreateMutex();
 
   //Core 0
   xTaskCreatePinnedToCore(vTaskNTP,  "TaskNTP",  configMINIMAL_STACK_SIZE + 2048,  NULL,  1,  &xTaskNTPHandle, PRO_CPU_NUM);

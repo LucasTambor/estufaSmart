@@ -3,6 +3,8 @@
 
 #include "driver/gpio.h"
 
+#define READ_DHT_PERIOD_MS 2000
+
 enum dht11_status {
     DHT11_OK = 0,
     DHT11_CRC_ERROR,
