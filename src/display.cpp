@@ -155,7 +155,7 @@ uint8_t displayHomeState(char command){
       break;
     case 'c':
     case 'C':
-      return DISPLAY_HOME;
+      return DISPLAY_MOTOR_MENU;
 
       break;
     case 'd':
@@ -220,7 +220,7 @@ uint8_t displaylighMenuState(char command){
       break;
     case 'c':
     case 'C':
-      return DISPLAY_HOME;
+      return DISPLAY_MOTOR_MENU;
 
       break;
     case 'd':
@@ -296,7 +296,7 @@ uint8_t displayLightOnConfState(char command) {
       break;
     case 'c':
     case 'C':
-      return DISPLAY_HOME;
+      return DISPLAY_MOTOR_MENU;
 
       break;
     case 'd':
@@ -375,7 +375,7 @@ uint8_t displayLightOFFConfState(char command) {
       break;
     case 'c':
     case 'C':
-      return DISPLAY_HOME;
+      return DISPLAY_MOTOR_MENU;
 
       break;
     case 'd':
@@ -430,7 +430,7 @@ uint8_t displaySetPointMenuState(char command) {
     case '7':
     case '8':
     case '9':
-      return DISPLAY_LIGHT_MENU;
+      return DISPLAY_SET_POINT_MENU;
       break;
     case 'a':
     case 'A':
@@ -443,7 +443,7 @@ uint8_t displaySetPointMenuState(char command) {
       break;
     case 'c':
     case 'C':
-      return DISPLAY_HOME;
+      return DISPLAY_MOTOR_MENU;
 
       break;
     case 'd':
@@ -514,7 +514,7 @@ uint8_t displaySetPointTemperatureConfState(char command) {
       break;
     case 'c':
     case 'C':
-      return DISPLAY_HOME;
+      return DISPLAY_MOTOR_MENU;
 
       break;
     case 'd':
@@ -589,7 +589,7 @@ uint8_t displaySetPointHumidityConfState(char command) {
       break;
     case 'c':
     case 'C':
-      return DISPLAY_HOME;
+      return DISPLAY_MOTOR_MENU;
 
       break;
     case 'd':
@@ -617,11 +617,136 @@ uint8_t displaySetPointHumidityConfState(char command) {
 }
 
 uint8_t displayMotorMenuState(char command) {
-  (void) command;
+  //title
+  display.setCursor(6, 4);
+  display.print("Conf de Motor");
+
+  //body
+  display.setCursor(6, 30);
+  display.println("1. Motor Speed");
+
+  switch(command) {
+    case '1':
+      return DISPLAY_MOTOR_SPEED_CONF;
+      break;
+
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      return DISPLAY_MOTOR_MENU;
+      break;
+    case 'a':
+    case 'A':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'b':
+    case 'B':
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+    case 'c':
+    case 'C':
+      return DISPLAY_MOTOR_MENU;
+
+      break;
+    case 'd':
+    case 'D':
+      return DISPLAY_HOME;
+
+      break;
+    case '#':
+      return DISPLAY_HOME;
+
+      break;
+    case '*':
+      return DISPLAY_HOME;
+
+      break;
+    default:
+      return DISPLAY_MOTOR_MENU;
+
+      break;
+  }
 }
 
 uint8_t displayMotorSpeedMenuState(char command) {
-  (void) command;
+  char buffer[32] = {0};
+  static uint8_t char_count = 0;
+  static String temp = "";
+  display.setTextSize(1);
+
+  //title
+  display.setCursor(6, 4);
+  display.print("Motor Speed");
+
+  //body
+  display.setCursor(6, 30);
+
+  sprintf(buffer, "Actual Value: %d \%", motor_speed );
+  display.println(buffer);
+
+  display.setCursor(6, 40);
+  display.print("New Value: ");
+  display.print(temp);
+
+  switch(command) {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '0':
+      if(char_count < 2) {
+        char_count++;
+        temp += command;
+      }
+      return DISPLAY_MOTOR_SPEED_CONF;
+      break;
+    case 'a':
+    case 'A':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'b':
+    case 'B':
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+    case 'c':
+    case 'C':
+      return DISPLAY_MOTOR_MENU;
+
+      break;
+    case 'd':
+    case 'D':
+      return DISPLAY_HOME;
+
+      break;
+    case '#':
+      return DISPLAY_HOME;
+
+      break;
+    case '*': //Save and return
+      motor_speed = atoi(temp.c_str());
+      char_count = 0;
+      temp = "";
+      saveToEeprom(MOTOR_SPEED_ADDR, motor_speed);
+      return DISPLAY_MOTOR_MENU;
+
+      break;
+    default:
+      return DISPLAY_MOTOR_SPEED_CONF;
+
+      break;
+  }
 }
 
 uint8_t displayOperationModeState(char command) {

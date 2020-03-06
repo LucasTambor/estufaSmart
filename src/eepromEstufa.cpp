@@ -16,6 +16,7 @@ void initVarFromEeprom() {
   temperature_set_point = EEPROM.read(TEMP_SET_POINT_ADDR);
   humidity_set_point = EEPROM.read(HUMIDITY_SET_POINT_ADDR);
   motor_speed = EEPROM.read(MOTOR_SPEED_ADDR);
+  motor_state = EEPROM.read(MOTOR_STATE_ADDR);
 }
 
 void saveToEeprom(uint8_t addr, uint8_t value) {

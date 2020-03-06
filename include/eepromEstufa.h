@@ -9,6 +9,7 @@
 #define TEMP_SET_POINT_ADDR       70
 #define HUMIDITY_SET_POINT_ADDR   72
 #define MOTOR_SPEED_ADDR          74
+#define MOTOR_STATE_ADDR          76
 
 #define MAX_STRING_SIZE           32
 void initEeprom();

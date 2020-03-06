@@ -28,6 +28,7 @@ const char* mqttPassword = "wauG8UCgVkct";
 bool mqttState = 0;
 bool operation_state = 0;
 bool light_state = 0;
+bool motor_state = 0;
 uint8_t temperature_set_point = 0;
 uint8_t humidity_set_point = 0;
 uint8_t motor_speed = 0;
@@ -35,8 +36,9 @@ uint8_t motor_speed = 0;
 //**********************************************************************************************************
 //Topicos
 //get
-const char* mqttTopicSubOpState ="param/get/state";
 const char* mqttTopicSubLightState ="state/get/light";
+const char* mqttTopicSubMotorState ="state/get/motor";
+const char* mqttTopicSubOpState ="param/get/state";
 const char* mqttTopicSubLightOnParam ="param/get/light_on";
 const char* mqttTopicSubLightOffParam ="param/get/light_off";
 const char* mqttTopicSubTempSetParam ="param/get/temp_set";
@@ -44,8 +46,9 @@ const char* mqttTopicSubHumSetParam ="param/get/hum_set";
 const char* mqttTopicSubMotorSpeedParam ="param/get/motor_speed";
 
 //set
-const char* mqttTopicPubOpState ="param/set/state";
 const char* mqttTopicPubLightState ="state/set/light";
+const char* mqttTopicPubMotorState ="state/set/motor";
+const char* mqttTopicPubOpState ="param/set/state";
 const char* mqttTopicPubLightOnParam ="param/set/light_on";
 const char* mqttTopicPubLightOffParam ="param/set/light_off";
 const char* mqttTopicPubTempSetParam ="param/set/temp_set";
@@ -88,6 +91,12 @@ void vTaskMqtt(void *pvParameters){
     sprintf(buffer, "%d", light_state);
     xSemaphoreGive( xLightStateMutex );
     client.publish(mqttTopicPubLightState, buffer);
+
+    //Motor State
+    xSemaphoreTake( xMotorStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    sprintf(buffer, "%d", motor_state);
+    xSemaphoreGive( xMotorStateMutex );
+    client.publish(mqttTopicPubMotorState, buffer);
 
     //Light On/Off Param
     xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
@@ -192,6 +201,13 @@ void SubCallback(char* topic, byte* payload, unsigned int length) {
       saveToEeprom(LIGHT_STATE_ADDR, light_state);
       xSemaphoreGive( xLightStateMutex );
     }
+
+    if(!strcmp(topic, mqttTopicSubMotorState)) { // Topico Motor State
+      xSemaphoreTake( xMotorStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+      motor_state = atoi(strMSG.c_str());
+      saveToEeprom(MOTOR_STATE_ADDR, motor_state);
+      xSemaphoreGive( xMotorStateMutex );
+    }
   }
 
 }
@@ -204,4 +220,5 @@ void subscribeToTopics() {
   client.subscribe(mqttTopicSubTempSetParam);
   client.subscribe(mqttTopicSubHumSetParam);
   client.subscribe(mqttTopicSubMotorSpeedParam);
+  client.subscribe(mqttTopicSubMotorState);
 }
