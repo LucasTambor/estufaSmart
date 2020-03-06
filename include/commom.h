@@ -2,9 +2,7 @@
 #define _COMMOM_H_
 
 #include <Arduino.h>
-
-#define WIFI_SSID       "badDaysSpaceship2"
-#define WIFI_PASSWORD   "+ps3=dw71102"
+#include "wifi_psw.h"
 
 extern QueueHandle_t xCommandQueue;
 
