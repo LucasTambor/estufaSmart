@@ -15,7 +15,6 @@
 
 static Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-
 String schedule_light_ON = "";
 String schedule_light_OFF = "";
 
@@ -125,7 +124,7 @@ uint8_t displayHomeState(char command){
   setLighIcon(local_light_state);
 
   xSemaphoreTake( xOpStateMutex, portMAX_DELAY );
-  local_op_state = operation_state;
+  local_op_state = operation_mode;
   xSemaphoreGive( xOpStateMutex );
 
   sprintf(buffer, "%s", local_op_state ? "manual" : "auto");
@@ -160,7 +159,7 @@ uint8_t displayHomeState(char command){
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
@@ -183,7 +182,7 @@ uint8_t displayHomeState(char command){
 uint8_t displaylighMenuState(char command){
   //title
   display.setCursor(6, 4);
-  display.print("Configuracao de Luz");
+  display.print("Schedule Light Conf");
 
   //body
   display.setCursor(6, 30);
@@ -225,12 +224,17 @@ uint8_t displaylighMenuState(char command){
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
-      return DISPLAY_HOME;
-
+      if(operation_mode == MANUAL_MODE) {
+        xSemaphoreTake( xLightStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+        light_state = !light_state;
+        saveToEeprom(LIGHT_STATE_ADDR, light_state);
+        xSemaphoreGive( xLightStateMutex );
+      }
+      return DISPLAY_LIGHT_MENU;
       break;
     case '*':
       return DISPLAY_HOME;
@@ -301,18 +305,21 @@ uint8_t displayLightOnConfState(char command) {
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
+
       return DISPLAY_HOME;
 
       break;
     case '*': //Save and return
+      xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
       schedule_light_ON = temp;
       char_count = 0;
       temp = "";
       saveStringToEeprom(LIGHT_SCHEDULE_ON_ADDR, schedule_light_ON);
+      xSemaphoreGive( xLightScheduleMutex );
       return DISPLAY_LIGHT_MENU;
 
       break;
@@ -323,6 +330,8 @@ uint8_t displayLightOnConfState(char command) {
   }
 
 }
+
+//***************************************************************************************************************************
 
 uint8_t displayLightOFFConfState(char command) {
   char buffer[32] = {0};
@@ -380,7 +389,7 @@ uint8_t displayLightOFFConfState(char command) {
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
@@ -388,11 +397,13 @@ uint8_t displayLightOFFConfState(char command) {
 
       break;
     case '*': //Save and return
+      xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
       schedule_light_OFF = temp;
       Serial.print("New Schedule: ");Serial.println(schedule_light_OFF);
       char_count = 0;
       temp = "";
       saveStringToEeprom(LIGHT_SCHEDULE_OFF_ADDR, schedule_light_OFF);
+      xSemaphoreGive( xLightScheduleMutex );
       return DISPLAY_LIGHT_MENU;
 
       break;
@@ -403,10 +414,12 @@ uint8_t displayLightOFFConfState(char command) {
   }
 }
 
+//***************************************************************************************************************************
+
 uint8_t displaySetPointMenuState(char command) {
   //title
-  display.setCursor(6, 4);
-  display.print("Conf de Set Point");
+  display.setCursor(3, 4);
+  display.print("Light Set Point Conf");
 
   //body
   display.setCursor(6, 30);
@@ -448,7 +461,7 @@ uint8_t displaySetPointMenuState(char command) {
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
@@ -466,6 +479,8 @@ uint8_t displaySetPointMenuState(char command) {
   }
 }
 
+//***************************************************************************************************************************
+
 uint8_t displaySetPointTemperatureConfState(char command) {
   char buffer[32] = {0};
   static uint8_t char_count = 0;
@@ -473,7 +488,7 @@ uint8_t displaySetPointTemperatureConfState(char command) {
   display.setTextSize(1);
 
   //title
-  display.setCursor(6, 10);
+  display.setCursor(30, 4);
   display.print("Temperature");
 
   //body
@@ -519,7 +534,7 @@ uint8_t displaySetPointTemperatureConfState(char command) {
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
@@ -527,10 +542,12 @@ uint8_t displaySetPointTemperatureConfState(char command) {
 
       break;
     case '*': //Save and return
+      xSemaphoreTake( xTemperatureSetPointMutex, pdMS_TO_TICKS(portMAX_DELAY) );
       temperature_set_point = atoi(temp.c_str());
       char_count = 0;
       temp = "";
       saveToEeprom(TEMP_SET_POINT_ADDR, temperature_set_point);
+      xSemaphoreGive( xTemperatureSetPointMutex );
       return DISPLAY_SET_POINT_MENU;
 
       break;
@@ -541,6 +558,8 @@ uint8_t displaySetPointTemperatureConfState(char command) {
   }
 }
 
+//***************************************************************************************************************************
+
 uint8_t displaySetPointHumidityConfState(char command) {
   char buffer[32] = {0};
   static uint8_t char_count = 0;
@@ -548,7 +567,7 @@ uint8_t displaySetPointHumidityConfState(char command) {
   display.setTextSize(1);
 
   //title
-  display.setCursor(6, 4);
+  display.setCursor(40, 4);
   display.print("Humidity");
 
   //body
@@ -594,7 +613,7 @@ uint8_t displaySetPointHumidityConfState(char command) {
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
@@ -602,10 +621,13 @@ uint8_t displaySetPointHumidityConfState(char command) {
 
       break;
     case '*': //Save and return
+      xSemaphoreTake( xHumiditySetPointMutex, pdMS_TO_TICKS(portMAX_DELAY) );
       humidity_set_point = atoi(temp.c_str());
       char_count = 0;
       temp = "";
       saveToEeprom(HUMIDITY_SET_POINT_ADDR, humidity_set_point);
+      xSemaphoreGive( xHumiditySetPointMutex );
+
       return DISPLAY_SET_POINT_MENU;
 
       break;
@@ -616,10 +638,12 @@ uint8_t displaySetPointHumidityConfState(char command) {
   }
 }
 
+//***************************************************************************************************************************
+
 uint8_t displayMotorMenuState(char command) {
   //title
   display.setCursor(6, 4);
-  display.print("Conf de Motor");
+  display.print("Motor Configuration");
 
   //body
   display.setCursor(6, 30);
@@ -656,7 +680,7 @@ uint8_t displayMotorMenuState(char command) {
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
@@ -674,6 +698,8 @@ uint8_t displayMotorMenuState(char command) {
   }
 }
 
+//***************************************************************************************************************************
+
 uint8_t displayMotorSpeedMenuState(char command) {
   char buffer[32] = {0};
   static uint8_t char_count = 0;
@@ -681,7 +707,7 @@ uint8_t displayMotorSpeedMenuState(char command) {
   display.setTextSize(1);
 
   //title
-  display.setCursor(6, 4);
+  display.setCursor(30, 4);
   display.print("Motor Speed");
 
   //body
@@ -727,7 +753,7 @@ uint8_t displayMotorSpeedMenuState(char command) {
       break;
     case 'd':
     case 'D':
-      return DISPLAY_HOME;
+      return DISPLAY_OPERATION_MODE_CONF;
 
       break;
     case '#':
@@ -735,10 +761,12 @@ uint8_t displayMotorSpeedMenuState(char command) {
 
       break;
     case '*': //Save and return
+      xSemaphoreTake( xMotorSpeedMutex, pdMS_TO_TICKS(portMAX_DELAY) );
       motor_speed = atoi(temp.c_str());
       char_count = 0;
       temp = "";
       saveToEeprom(MOTOR_SPEED_ADDR, motor_speed);
+      xSemaphoreGive( xMotorSpeedMutex );
       return DISPLAY_MOTOR_MENU;
 
       break;
@@ -749,8 +777,80 @@ uint8_t displayMotorSpeedMenuState(char command) {
   }
 }
 
+//***************************************************************************************************************************
+
 uint8_t displayOperationModeState(char command) {
-  (void) command;
+  char buffer[32] = {0};
+  static bool original_op_mode = operation_mode;
+  static bool temp_op_mode = original_op_mode;
+  display.setTextSize(1);
+
+  //title
+  display.setCursor(25, 4);
+  display.print("Operation Mode");
+
+  //body
+  display.setCursor(6, 30);
+  sprintf(buffer, "Actual Value: %s", original_op_mode ? "manual" : "auto");
+  display.println(buffer);
+
+  display.setCursor(6, 40);
+  sprintf(buffer, "New Value: %s", temp_op_mode ? "manual" : "auto");
+  display.print(buffer);
+
+  switch(command) {
+    case '1':
+      temp_op_mode = !temp_op_mode;
+      return DISPLAY_OPERATION_MODE_CONF;
+      break;
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '0':
+
+      return DISPLAY_OPERATION_MODE_CONF;
+      break;
+    case 'a':
+    case 'A':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'b':
+    case 'B':
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+    case 'c':
+    case 'C':
+      return DISPLAY_MOTOR_MENU;
+
+      break;
+    case 'd':
+    case 'D':
+      return DISPLAY_OPERATION_MODE_CONF;
+
+      break;
+    case '#':
+      return DISPLAY_HOME;
+
+      break;
+    case '*': //Save and return
+      xSemaphoreTake( xOpStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+      operation_mode = temp_op_mode;
+      xSemaphoreGive( xOpStateMutex );
+      saveToEeprom(OPERATION_MODE_ADDR, operation_mode);
+      return DISPLAY_HOME;
+
+      break;
+    default:
+      return DISPLAY_OPERATION_MODE_CONF;
+
+      break;
+  }
 }
 
 //***************************************************************************************************************************
@@ -768,11 +868,15 @@ void setWifiIcon(int32_t rssi) {
   }
 }
 
+//***************************************************************************************************************************
+
 void setMqttIcon(bool state) {
   if(state){
     display.drawBitmap(SCREEN_WIDTH-36, 0, heart_icon16x16, 16, 16, 1);
   }
 }
+
+//***************************************************************************************************************************
 
 void setLighIcon(bool state) {
   if(state) {

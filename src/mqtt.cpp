@@ -26,7 +26,7 @@ const char* mqttPassword = "wauG8UCgVkct";
 //**********************************************************************************************************
 
 bool mqttState = 0;
-bool operation_state = 0;
+bool operation_mode = 0;
 bool light_state = 0;
 bool motor_state = 0;
 uint8_t temperature_set_point = 0;
@@ -82,7 +82,7 @@ void vTaskMqtt(void *pvParameters){
     mqttState = 1;
     //Op Mode
     xSemaphoreTake( xOpStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
-    sprintf(buffer, "%d", operation_state);
+    sprintf(buffer, "%d", operation_mode);
     xSemaphoreGive( xOpStateMutex );
     client.publish(mqttTopicPubOpState, buffer);
 
@@ -157,8 +157,8 @@ void SubCallback(char* topic, byte* payload, unsigned int length) {
 
   if(!strcmp(topic, mqttTopicSubOpState)) { // Topico Operation State
     xSemaphoreTake( xOpStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
-    operation_state = atoi(strMSG.c_str());
-    saveToEeprom(OPERATION_STATE_ADDR, operation_state);
+    operation_mode = atoi(strMSG.c_str());
+    saveToEeprom(OPERATION_MODE_ADDR, operation_mode);
     xSemaphoreGive( xOpStateMutex );
   }
   if(!strcmp(topic, mqttTopicSubLightOnParam)) { // Topico light on Param
@@ -174,7 +174,7 @@ void SubCallback(char* topic, byte* payload, unsigned int length) {
     xSemaphoreGive( xLightScheduleMutex );
   }
   if(!strcmp(topic, mqttTopicSubTempSetParam)) { // Topico set temperature set point
-    xSemaphoreTake( xHumiditySetPointMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    xSemaphoreTake( xTemperatureSetPointMutex, pdMS_TO_TICKS(portMAX_DELAY) );
     temperature_set_point = atoi(strMSG.c_str());
     saveToEeprom(TEMP_SET_POINT_ADDR, temperature_set_point);
     xSemaphoreGive( xTemperatureSetPointMutex );
@@ -187,14 +187,14 @@ void SubCallback(char* topic, byte* payload, unsigned int length) {
     xSemaphoreGive( xHumiditySetPointMutex );
   }
 
-  if(!strcmp(topic, mqttTopicSubMotorSpeedParam)) { // Topico set humidity set point
+  if(!strcmp(topic, mqttTopicSubMotorSpeedParam)) { // Topico Motor Speed Param
     xSemaphoreTake( xMotorSpeedMutex, pdMS_TO_TICKS(portMAX_DELAY) );
     motor_speed = atoi(strMSG.c_str());
     saveToEeprom(MOTOR_SPEED_ADDR, motor_speed);
     xSemaphoreGive( xMotorSpeedMutex );
   }
 
-  if(operation_state) {
+  if(operation_mode) {
     if(!strcmp(topic, mqttTopicSubLightState)) { // Topico Light State
       xSemaphoreTake( xLightStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
       light_state = atoi(strMSG.c_str());

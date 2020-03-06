@@ -32,7 +32,7 @@ extern String horario;
 
 extern bool mqttState;
 
-extern bool operation_state;
+extern bool operation_mode;
 extern bool light_state;
 extern bool motor_state;
 extern String schedule_light_ON;
@@ -57,7 +57,11 @@ extern void vTaskDHT(void *pvParameters);
 
 
 //********************************************************************************************************
-//EEPROM
+//Operation Mode
+enum {
+  AUTOMATIC_MODE = 0,
+  MANUAL_MODE
+};
 
 
 #endif //_COMMOM_H_

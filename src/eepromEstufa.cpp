@@ -9,7 +9,7 @@ void initEeprom() {
 
 
 void initVarFromEeprom() {
-  operation_state = EEPROM.read(OPERATION_STATE_ADDR);
+  operation_mode = EEPROM.read(OPERATION_MODE_ADDR);
   light_state = EEPROM.read(LIGHT_STATE_ADDR);
   schedule_light_ON = readStringFromEeprom(LIGHT_SCHEDULE_ON_ADDR);
   schedule_light_OFF = readStringFromEeprom(LIGHT_SCHEDULE_OFF_ADDR);

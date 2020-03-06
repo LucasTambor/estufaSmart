@@ -5,11 +5,6 @@
 
 #define PIN_LIGHT   23
 
-enum Mode_e {
-  AUTOMATIC_MODE = 0,
-  MANUAL_MODE
-};
-
 bool LightAutomaticControl();
 bool LightManualControl();
 uint16_t getIntFromHour(String hour);

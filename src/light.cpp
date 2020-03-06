@@ -18,7 +18,7 @@ void vTaskLight(void *pvParameters) {
 
   while(1) {
     xSemaphoreTake( xOpStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
-    mode = operation_state;
+    mode = operation_mode;
     xSemaphoreGive( xOpStateMutex );
 
     switch(mode) {
