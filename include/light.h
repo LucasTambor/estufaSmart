@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#define PIN_LIGHT   2
+#define PIN_LIGHT   23
 
 enum Mode_e {
   AUTOMATIC_MODE = 0,

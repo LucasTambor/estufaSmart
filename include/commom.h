@@ -16,6 +16,9 @@ extern SemaphoreHandle_t xWifiMutex;
 extern SemaphoreHandle_t xOpStateMutex;
 extern SemaphoreHandle_t xLightStateMutex;
 extern SemaphoreHandle_t xLightScheduleMutex;
+extern SemaphoreHandle_t xTemperatureSetPointMutex;
+extern SemaphoreHandle_t xHumiditySetPointMutex;
+extern SemaphoreHandle_t xMotorSpeedMutex;
 
 extern bool wifi_ready;
 extern uint32_t rssi;
@@ -30,6 +33,9 @@ extern bool operation_state;
 extern bool light_state;
 extern String schedule_light_ON;
 extern String schedule_light_OFF;
+extern uint8_t temperature_set_point;
+extern uint8_t humidity_set_point;
+extern uint8_t motor_speed;
 
 //********************************************************************************************************
 
@@ -41,5 +47,10 @@ extern void vTaskNTP(void *pvParameters);
 extern void vTaskDisplay(void *pvParameters);
 extern void vTaskMqtt(void *pvParameters);
 extern void vTaskLight(void *pvParameters);
+
+
+//********************************************************************************************************
+//EEPROM
+
 
 #endif //_COMMOM_H_

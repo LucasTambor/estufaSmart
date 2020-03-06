@@ -11,6 +11,7 @@
 #include "icons.h"
 #include "commom.h"
 #include "display.h"
+#include "eepromEstufa.h"
 
 static Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -310,6 +311,7 @@ uint8_t displayLightOnConfState(char command) {
       schedule_light_ON = temp_schedule;
       char_count = 0;
       temp_schedule = "";
+      saveStringToEeprom(LIGHT_SCHEDULE_ON_ADDR, schedule_light_ON);
       return DISPLAY_LIGHT_MENU;
 
       break;
@@ -389,6 +391,7 @@ uint8_t displayLightOFFConfState(char command) {
       Serial.print("New Schedule: ");Serial.println(schedule_light_OFF);
       char_count = 0;
       temp_schedule = "";
+      saveStringToEeprom(LIGHT_SCHEDULE_OFF_ADDR, schedule_light_OFF);
       return DISPLAY_LIGHT_MENU;
 
       break;

@@ -5,6 +5,7 @@
 #include <PubSubClient.h>
 #include "commom.h"
 #include "mqtt.h"
+#include "eepromEstufa.h"
 
 #define _DEBUG_MQTT_
 
@@ -27,6 +28,9 @@ const char* mqttPassword = "wauG8UCgVkct";
 bool mqttState = 0;
 bool operation_state = 0;
 bool light_state = 0;
+uint8_t temperature_set_point = 0;
+uint8_t humidity_set_point = 0;
+uint8_t motor_speed = 0;
 
 //**********************************************************************************************************
 //Topicos
@@ -35,12 +39,18 @@ const char* mqttTopicSubOpState ="param/get/state";
 const char* mqttTopicSubLightState ="state/get/light";
 const char* mqttTopicSubLightOnParam ="param/get/light_on";
 const char* mqttTopicSubLightOffParam ="param/get/light_off";
+const char* mqttTopicSubTempSetParam ="param/get/temp_set";
+const char* mqttTopicSubHumSetParam ="param/get/hum_set";
+const char* mqttTopicSubMotorSpeedParam ="param/get/motor_speed";
 
 //set
 const char* mqttTopicPubOpState ="param/set/state";
 const char* mqttTopicPubLightState ="state/set/light";
 const char* mqttTopicPubLightOnParam ="param/set/light_on";
 const char* mqttTopicPubLightOffParam ="param/set/light_off";
+const char* mqttTopicPubTempSetParam ="param/set/temp_set";
+const char* mqttTopicPubHumSetParam ="param/set/hum_set";
+const char* mqttTopicPubMotorSpeedParam ="param/set/motor_speed";
 
 /*Implementação da Task MQTT */
 void vTaskMqtt(void *pvParameters){
@@ -85,11 +95,28 @@ void vTaskMqtt(void *pvParameters){
     client.publish(mqttTopicPubLightOffParam, schedule_light_OFF.c_str());
     xSemaphoreGive( xLightScheduleMutex );
 
+    //Temperature Set Point
+    xSemaphoreTake( xTemperatureSetPointMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    sprintf(buffer, "%d", temperature_set_point);
+    xSemaphoreGive( xTemperatureSetPointMutex );
+    client.publish(mqttTopicPubTempSetParam, buffer);
+
+    //Humidity Set Point
+    xSemaphoreTake( xHumiditySetPointMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    sprintf(buffer, "%d", humidity_set_point);
+    xSemaphoreGive( xHumiditySetPointMutex );
+    client.publish(mqttTopicPubHumSetParam, buffer);
+
+    //Motor Speed Set Point
+    xSemaphoreTake( xMotorSpeedMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    sprintf(buffer, "%d", motor_speed);
+    xSemaphoreGive( xMotorSpeedMutex );
+    client.publish(mqttTopicPubMotorSpeedParam, buffer);
+
     client.loop();
-    vTaskDelay(pdMS_TO_TICKS(10000));
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
-
 
 //função pra reconectar ao servido MQTT
 void MqttReconect() {
@@ -97,7 +124,6 @@ void MqttReconect() {
   while (!client.connected()) {
 
     if (client.connect("ESP32Client", mqttUser, mqttPassword )) {
-      Serial.println("Caiu mas VOltou");
       subscribeToTopics();
     } else {
       vTaskDelay(pdMS_TO_TICKS(100));
@@ -123,23 +149,47 @@ void SubCallback(char* topic, byte* payload, unsigned int length) {
   if(!strcmp(topic, mqttTopicSubOpState)) { // Topico Operation State
     xSemaphoreTake( xOpStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
     operation_state = atoi(strMSG.c_str());
+    saveToEeprom(OPERATION_STATE_ADDR, operation_state);
     xSemaphoreGive( xOpStateMutex );
   }
   if(!strcmp(topic, mqttTopicSubLightOnParam)) { // Topico light on Param
     xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
     schedule_light_ON = strMSG;
+    saveStringToEeprom(LIGHT_SCHEDULE_ON_ADDR, schedule_light_ON);
     xSemaphoreGive( xLightScheduleMutex );
   }
   if(!strcmp(topic, mqttTopicSubLightOffParam)) { // Topico light off Param
     xSemaphoreTake( xLightScheduleMutex, pdMS_TO_TICKS(portMAX_DELAY) );
     schedule_light_OFF = strMSG;
+    saveStringToEeprom(LIGHT_SCHEDULE_OFF_ADDR, schedule_light_OFF);
     xSemaphoreGive( xLightScheduleMutex );
+  }
+  if(!strcmp(topic, mqttTopicSubTempSetParam)) { // Topico set temperature set point
+    xSemaphoreTake( xHumiditySetPointMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    temperature_set_point = atoi(strMSG.c_str());
+    saveToEeprom(TEMP_SET_POINT_ADDR, temperature_set_point);
+    xSemaphoreGive( xTemperatureSetPointMutex );
+  }
+
+  if(!strcmp(topic, mqttTopicSubHumSetParam)) { // Topico set humidity set point
+    xSemaphoreTake( xHumiditySetPointMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    humidity_set_point = atoi(strMSG.c_str());
+    saveToEeprom(HUMIDITY_SET_POINT_ADDR, humidity_set_point);
+    xSemaphoreGive( xHumiditySetPointMutex );
+  }
+
+  if(!strcmp(topic, mqttTopicSubMotorSpeedParam)) { // Topico set humidity set point
+    xSemaphoreTake( xMotorSpeedMutex, pdMS_TO_TICKS(portMAX_DELAY) );
+    motor_speed = atoi(strMSG.c_str());
+    saveToEeprom(MOTOR_SPEED_ADDR, motor_speed);
+    xSemaphoreGive( xMotorSpeedMutex );
   }
 
   if(operation_state) {
     if(!strcmp(topic, mqttTopicSubLightState)) { // Topico Light State
       xSemaphoreTake( xLightStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
       light_state = atoi(strMSG.c_str());
+      saveToEeprom(LIGHT_STATE_ADDR, light_state);
       xSemaphoreGive( xLightStateMutex );
     }
   }
@@ -151,4 +201,7 @@ void subscribeToTopics() {
   client.subscribe(mqttTopicSubLightState);
   client.subscribe(mqttTopicSubLightOnParam);
   client.subscribe(mqttTopicSubLightOffParam);
+  client.subscribe(mqttTopicSubTempSetParam);
+  client.subscribe(mqttTopicSubHumSetParam);
+  client.subscribe(mqttTopicSubMotorSpeedParam);
 }

@@ -32,7 +32,7 @@ void vTaskLight(void *pvParameters) {
       break;
     }
 
-    digitalWrite(PIN_LIGHT, state);
+    digitalWrite(PIN_LIGHT, !state);
 
     vTaskDelay(pdMS_TO_TICKS(500));
   }

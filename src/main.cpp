@@ -15,6 +15,7 @@
 #include "ntp.h"
 #include "mqtt.h"
 #include "light.h"
+#include "eepromEstufa.h"
 
 //**********************************************************************************************************
 
@@ -33,19 +34,21 @@ SemaphoreHandle_t xWifiMutex;
 SemaphoreHandle_t xOpStateMutex;
 SemaphoreHandle_t xLightStateMutex;
 SemaphoreHandle_t xLightScheduleMutex;
+SemaphoreHandle_t xTemperatureSetPointMutex;
+SemaphoreHandle_t xHumiditySetPointMutex;
+SemaphoreHandle_t xMotorSpeedMutex;
 
 bool wifi_ready = 0;
 uint32_t rssi = 0;
-
-
-
-
 
 void setup()
 {
   // Declarar Serial para realizar debug do código
   Serial.begin(115200);
   delay(10);
+
+  initEeprom();
+  initVarFromEeprom();
 
   xCommandQueue = xQueueCreate(5, sizeof(char));
 
@@ -56,10 +59,13 @@ void setup()
   xOpStateMutex = xSemaphoreCreateMutex();
   xLightStateMutex = xSemaphoreCreateMutex();
   xLightScheduleMutex = xSemaphoreCreateMutex();
+  xTemperatureSetPointMutex = xSemaphoreCreateMutex();
+  xHumiditySetPointMutex = xSemaphoreCreateMutex();
+  xMotorSpeedMutex = xSemaphoreCreateMutex();
 
   xTaskCreatePinnedToCore(vTaskNTP,  "TaskNTP",  configMINIMAL_STACK_SIZE + 2048,  NULL,  1,  &xTaskNTPHandle, PRO_CPU_NUM);
   xTaskCreatePinnedToCore(vTaskMqtt,  "TaskMqtt",  configMINIMAL_STACK_SIZE + 4096,  NULL,  2,  &xTaskMqttHandle, PRO_CPU_NUM);
-  xTaskCreatePinnedToCore(vTaskDisplay,  "TaskDisplay",  configMINIMAL_STACK_SIZE + 1024,  NULL,  1,  &xTaskDisplayHandle, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(vTaskDisplay,  "TaskDisplay",  configMINIMAL_STACK_SIZE + 2048,  NULL,  1,  &xTaskDisplayHandle, APP_CPU_NUM);
   xTaskCreatePinnedToCore(vTaskInput,  "TaskInput",  configMINIMAL_STACK_SIZE + 1024,  NULL,  1,  &xTaskInputHandle, APP_CPU_NUM);
   xTaskCreatePinnedToCore(vTaskLight,  "TaskLight",  configMINIMAL_STACK_SIZE + 512,  NULL,  2,  &xTaskLightHandle, APP_CPU_NUM);
 }
