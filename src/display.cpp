@@ -150,7 +150,7 @@ uint8_t displayHomeState(char command){
       break;
     case 'b':
     case 'B':
-      return DISPLAY_HOME;
+      return DISPLAY_SET_POINT_MENU;
 
       break;
     case 'c':
@@ -187,8 +187,9 @@ uint8_t displaylighMenuState(char command){
 
   //body
   display.setCursor(6, 30);
-  display.println("1. Schedule turn ON light");
-  display.println("2. Schedule turn OFF light");
+  display.println("1. Schedule turn ON");
+  display.setCursor(6, 50);
+  display.println("2. Schedule turn OFF");
 
   switch(command) {
     case '1':
@@ -214,7 +215,7 @@ uint8_t displaylighMenuState(char command){
       break;
     case 'b':
     case 'B':
-      return DISPLAY_HOME;
+      return DISPLAY_SET_POINT_MENU;
 
       break;
     case 'c':
@@ -247,7 +248,7 @@ uint8_t displaylighMenuState(char command){
 uint8_t displayLightOnConfState(char command) {
   char buffer[32] = {0};
   static uint8_t char_count = 0;
-  static String temp_schedule = "";
+  static String temp = "";
   display.setTextSize(1);
 
   //title
@@ -262,7 +263,7 @@ uint8_t displayLightOnConfState(char command) {
 
   display.setCursor(6, 40);
   display.print("New Value: ");
-  display.print(temp_schedule);
+  display.print(temp);
 
   switch(command) {
     case '1':
@@ -277,9 +278,9 @@ uint8_t displayLightOnConfState(char command) {
     case '0':
       if(char_count < 4) {
         char_count++;
-        temp_schedule += command;
+        temp += command;
         if(char_count == 2) {
-          temp_schedule += ':';
+          temp += ':';
         }
       }
       return DISPLAY_LIGHT_ON_CONF;
@@ -290,7 +291,7 @@ uint8_t displayLightOnConfState(char command) {
       break;
     case 'b':
     case 'B':
-      return DISPLAY_HOME;
+      return DISPLAY_SET_POINT_MENU;
 
       break;
     case 'c':
@@ -308,9 +309,9 @@ uint8_t displayLightOnConfState(char command) {
 
       break;
     case '*': //Save and return
-      schedule_light_ON = temp_schedule;
+      schedule_light_ON = temp;
       char_count = 0;
-      temp_schedule = "";
+      temp = "";
       saveStringToEeprom(LIGHT_SCHEDULE_ON_ADDR, schedule_light_ON);
       return DISPLAY_LIGHT_MENU;
 
@@ -326,7 +327,7 @@ uint8_t displayLightOnConfState(char command) {
 uint8_t displayLightOFFConfState(char command) {
   char buffer[32] = {0};
   static uint8_t char_count = 0;
-  static String temp_schedule = "";
+  static String temp = "";
   display.setTextSize(1);
 
   //title
@@ -341,7 +342,7 @@ uint8_t displayLightOFFConfState(char command) {
 
   display.setCursor(6, 40);
   display.print("New Value: ");
-  display.print(temp_schedule);
+  display.print(temp);
 
   switch(command) {
     case '1':
@@ -356,9 +357,9 @@ uint8_t displayLightOFFConfState(char command) {
     case '0':
       if(char_count < 4) {
         char_count++;
-        temp_schedule += command;
+        temp += command;
         if(char_count == 2) {
-          temp_schedule += ':';
+          temp += ':';
         }
       }
       return DISPLAY_LIGHT_OFF_CONF;
@@ -369,7 +370,7 @@ uint8_t displayLightOFFConfState(char command) {
       break;
     case 'b':
     case 'B':
-      return DISPLAY_HOME;
+      return DISPLAY_SET_POINT_MENU;
 
       break;
     case 'c':
@@ -387,10 +388,10 @@ uint8_t displayLightOFFConfState(char command) {
 
       break;
     case '*': //Save and return
-      schedule_light_OFF = temp_schedule;
+      schedule_light_OFF = temp;
       Serial.print("New Schedule: ");Serial.println(schedule_light_OFF);
       char_count = 0;
-      temp_schedule = "";
+      temp = "";
       saveStringToEeprom(LIGHT_SCHEDULE_OFF_ADDR, schedule_light_OFF);
       return DISPLAY_LIGHT_MENU;
 
@@ -403,15 +404,216 @@ uint8_t displayLightOFFConfState(char command) {
 }
 
 uint8_t displaySetPointMenuState(char command) {
-  (void) command;
+  //title
+  display.setCursor(6, 4);
+  display.print("Conf de Set Point");
+
+  //body
+  display.setCursor(6, 30);
+  display.println("1. Temp set point");
+  display.setCursor(6, 50);
+  display.println("2. hum set point");
+
+  switch(command) {
+    case '1':
+      return DISPLAY_SET_POINT_TEMPERATURE_CONF;
+      break;
+
+    case '2':
+      return DISPLAY_SET_POINT_HUMIDITY_CONF;
+      break;
+
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'a':
+    case 'A':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'b':
+    case 'B':
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+    case 'c':
+    case 'C':
+      return DISPLAY_HOME;
+
+      break;
+    case 'd':
+    case 'D':
+      return DISPLAY_HOME;
+
+      break;
+    case '#':
+      return DISPLAY_HOME;
+
+      break;
+    case '*':
+      return DISPLAY_HOME;
+
+      break;
+    default:
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+  }
 }
 
 uint8_t displaySetPointTemperatureConfState(char command) {
-  (void) command;
+  char buffer[32] = {0};
+  static uint8_t char_count = 0;
+  static String temp = "";
+  display.setTextSize(1);
+
+  //title
+  display.setCursor(6, 10);
+  display.print("Temperature");
+
+  //body
+  display.setCursor(6, 30);
+
+  sprintf(buffer, "Actual Value: %d C", temperature_set_point );
+  display.println(buffer);
+
+  display.setCursor(6, 40);
+  display.print("New Value: ");
+  display.print(temp);
+
+  switch(command) {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '0':
+      if(char_count < 2) {
+        char_count++;
+        temp += command;
+      }
+      return DISPLAY_SET_POINT_TEMPERATURE_CONF;
+      break;
+    case 'a':
+    case 'A':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'b':
+    case 'B':
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+    case 'c':
+    case 'C':
+      return DISPLAY_HOME;
+
+      break;
+    case 'd':
+    case 'D':
+      return DISPLAY_HOME;
+
+      break;
+    case '#':
+      return DISPLAY_HOME;
+
+      break;
+    case '*': //Save and return
+      temperature_set_point = atoi(temp.c_str());
+      char_count = 0;
+      temp = "";
+      saveToEeprom(TEMP_SET_POINT_ADDR, temperature_set_point);
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+    default:
+      return DISPLAY_SET_POINT_TEMPERATURE_CONF;
+
+      break;
+  }
 }
 
 uint8_t displaySetPointHumidityConfState(char command) {
-  (void) command;
+  char buffer[32] = {0};
+  static uint8_t char_count = 0;
+  static String temp = "";
+  display.setTextSize(1);
+
+  //title
+  display.setCursor(6, 4);
+  display.print("Humidity");
+
+  //body
+  display.setCursor(6, 30);
+
+  sprintf(buffer, "Actual Value: %d \%", humidity_set_point );
+  display.println(buffer);
+
+  display.setCursor(6, 40);
+  display.print("New Value: ");
+  display.print(temp);
+
+  switch(command) {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '0':
+      if(char_count < 2) {
+        char_count++;
+        temp += command;
+      }
+      return DISPLAY_SET_POINT_HUMIDITY_CONF;
+      break;
+    case 'a':
+    case 'A':
+      return DISPLAY_LIGHT_MENU;
+      break;
+    case 'b':
+    case 'B':
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+    case 'c':
+    case 'C':
+      return DISPLAY_HOME;
+
+      break;
+    case 'd':
+    case 'D':
+      return DISPLAY_HOME;
+
+      break;
+    case '#':
+      return DISPLAY_HOME;
+
+      break;
+    case '*': //Save and return
+      humidity_set_point = atoi(temp.c_str());
+      char_count = 0;
+      temp = "";
+      saveToEeprom(HUMIDITY_SET_POINT_ADDR, humidity_set_point);
+      return DISPLAY_SET_POINT_MENU;
+
+      break;
+    default:
+      return DISPLAY_SET_POINT_HUMIDITY_CONF;
+
+      break;
+  }
 }
 
 uint8_t displayMotorMenuState(char command) {
