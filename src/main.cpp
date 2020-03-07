@@ -28,6 +28,8 @@ TaskHandle_t xTaskNTPHandle;
 TaskHandle_t xTaskMqttHandle;
 TaskHandle_t xTaskLightHandle;
 TaskHandle_t xTaskDHTHandle;
+TaskHandle_t xTaskFanHandle;
+TaskHandle_t xTaskHumidifierHandle;
 
 SemaphoreHandle_t xWifiRssiMutex;
 SemaphoreHandle_t xHorarioMutex;
@@ -82,6 +84,8 @@ void setup()
   xTaskCreatePinnedToCore(vTaskInput,  "TaskInput",  configMINIMAL_STACK_SIZE + 1024,  NULL,  1,  &xTaskInputHandle, APP_CPU_NUM);
   xTaskCreatePinnedToCore(vTaskLight,  "TaskLight",  configMINIMAL_STACK_SIZE + 512,  NULL,  2,  &xTaskLightHandle, APP_CPU_NUM);
   xTaskCreatePinnedToCore(vTaskDHT,  "TaskDHT",  configMINIMAL_STACK_SIZE + 512,  NULL,  3,  &xTaskDHTHandle, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(vTaskFan,  "TaskFan",  configMINIMAL_STACK_SIZE + 512,  NULL,  3,  &xTaskFanHandle, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(vTaskHumidifier,  "TaskHumidifier",  configMINIMAL_STACK_SIZE + 512,  NULL,  3,  &xTaskHumidifierHandle, APP_CPU_NUM);
 }
 
 void loop()

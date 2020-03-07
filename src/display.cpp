@@ -110,7 +110,7 @@ uint8_t displayHomeState(char command){
   display.setCursor(0, 4);
   // Time
   xSemaphoreTake( xHorarioMutex, portMAX_DELAY );
-  display.print(horario); 
+  display.print(horario);
   xSemaphoreGive( xHorarioMutex );
 
   //RSSI
@@ -127,14 +127,14 @@ uint8_t displayHomeState(char command){
   setWifiIcon(local_rssi);
   setMqttIcon(mqttState);
   setLighIcon(local_light_state);
-  
+
   //Op Mode
   xSemaphoreTake( xOpStateMutex, portMAX_DELAY );
   local_op_state = operation_mode;
   xSemaphoreGive( xOpStateMutex );
   sprintf(buffer, "%s", local_op_state ? "manual" : "auto");
   display.setCursor(50, 57);
-  display.print(buffer); 
+  display.print(buffer);
 
   //Motor State
   xSemaphoreTake( xMotorStateMutex, pdMS_TO_TICKS(portMAX_DELAY) );
@@ -148,16 +148,16 @@ uint8_t displayHomeState(char command){
   xSemaphoreGive( xHumidifierMutex );
   setHumidifierIcon(local_hum_state);
 
-  
+
   //Temperature
   display.setCursor(0, 57);
   sprintf(buffer, "%2.2fC", temperature_value);
-  display.print(buffer); 
+  display.print(buffer);
 
   //Humidity
   display.setCursor(SCREEN_WIDTH - 20, 57);
   sprintf(buffer, "%d%%", humidity_value);
-  display.print(buffer); 
+  display.print(buffer);
 
   switch(command) {
     case '1':
@@ -904,24 +904,23 @@ void setMqttIcon(bool state) {
 
 void setLighIcon(bool state) {
   if(state) {
-    display.drawBitmap(0, 30, bulb_on_icon16x16, 16, 16, 1);
+    display.drawBitmap(10, 30, bulb_on_icon16x16, 16, 16, 1);
   }else {
-    display.drawBitmap(0, 30, bulb_off_icon16x16, 16, 16, 1);
+    display.drawBitmap(10, 30, bulb_off_icon16x16, 16, 16, 1);
   }
 }
 
 void setMotorIcon(bool state) {
   if(state) {
-    display.drawBitmap(20, 30, motor_on_icon16x16, 16, 16, 1);
+    display.drawBitmap(60, 30, motor_on_icon16x16, 16, 16, 1);
   }else {
-    display.drawBitmap(20, 30, motor_off_icon16x16, 16, 16, 1);
+    display.drawBitmap(60, 30, motor_off_icon16x16, 16, 16, 1);
   }
 }
 
 void setHumidifierIcon(bool state) {
   if(state) {
-    display.drawBitmap(40, 30, humidity_on_icon16x16, 16, 16, 1);
+    display.drawBitmap(106, 30, humidity_on_icon16x16, 16, 16, 1);
   }else {
-    display.drawBitmap(40, 30, humidity_off_icon16x16, 16, 16, 1);
+    display.drawBitmap(106, 30, humidity_off_icon16x16, 16, 16, 1);
   }}
-//***************************************************************************************************************************

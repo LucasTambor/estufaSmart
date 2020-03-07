@@ -7,7 +7,7 @@
 #include "mqtt.h"
 #include "eepromEstufa.h"
 
-#define _DEBUG_MQTT_
+// #define _DEBUG_MQTT_
 
 /* instacias para WIFI e client*/
 WiFiClient espClient;
@@ -52,6 +52,8 @@ const char* mqttTopicSubMotorSpeedParam ="param/get/motor_speed";
 const char* mqttTopicPubLightState ="state/set/light";
 const char* mqttTopicPubMotorState ="state/set/motor";
 const char* mqttTopicPubHumState ="state/set/hum";
+const char* mqttTopicPubTemperatureState ="state/set/temperature";
+const char* mqttTopicPubHumidityState ="state/set/humidity";
 const char* mqttTopicPubOpState ="param/set/state";
 const char* mqttTopicPubLightOnParam ="param/set/light_on";
 const char* mqttTopicPubLightOffParam ="param/set/light_off";
@@ -131,6 +133,13 @@ void vTaskMqtt(void *pvParameters){
     sprintf(buffer, "%d", motor_speed);
     xSemaphoreGive( xMotorSpeedMutex );
     client.publish(mqttTopicPubMotorSpeedParam, buffer);
+
+    //Temperature Value
+    sprintf(buffer, "%2.2f", temperature_value);
+    client.publish(mqttTopicPubTemperatureState, buffer);
+    //Humidity Value
+    sprintf(buffer, "%d", humidity_value);
+    client.publish(mqttTopicPubHumidityState, buffer);
 
     client.loop();
     vTaskDelay(pdMS_TO_TICKS(1000));

@@ -46,7 +46,14 @@ extern uint8_t humidity_value;
 
 //********************************************************************************************************
 
-extern TaskHandle_t xTaskInputHandle,xTaskDisplayHandle, xTaskNTPHandle, xTaskMqttHandle, xTaskDHTHandle;
+extern TaskHandle_t xTaskInputHandle;
+extern TaskHandle_t xTaskDisplayHandle;
+extern TaskHandle_t xTaskNTPHandle;
+extern TaskHandle_t xTaskMqttHandle;
+extern TaskHandle_t xTaskLightHandle;
+extern TaskHandle_t xTaskDHTHandle;
+extern TaskHandle_t xTaskFanHandle;
+extern TaskHandle_t xTaskHumidifierHandle;
 
 /* Protótipo das Tasks*/
 extern void vTaskInput(void *pvParameters );
@@ -55,6 +62,8 @@ extern void vTaskDisplay(void *pvParameters);
 extern void vTaskMqtt(void *pvParameters);
 extern void vTaskLight(void *pvParameters);
 extern void vTaskDHT(void *pvParameters);
+extern void vTaskFan(void *pvParameters);
+extern void vTaskHumidifier(void *pvParameters);
 
 
 //********************************************************************************************************
