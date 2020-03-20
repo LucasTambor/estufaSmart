@@ -912,9 +912,9 @@ void setLighIcon(bool state) {
 
 void setMotorIcon(bool state) {
   if(state) {
-    display.drawBitmap(60, 30, motor_on_icon16x16, 16, 16, 1);
+    display.drawBitmap(50, 30, motor_on_icon16x16, 16, 16, 1);
   }else {
-    display.drawBitmap(60, 30, motor_off_icon16x16, 16, 16, 1);
+    display.drawBitmap(50, 30, motor_off_icon16x16, 16, 16, 1);
   }
 }
 

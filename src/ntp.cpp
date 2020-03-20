@@ -12,7 +12,6 @@
 #include "commom.h"
 #include "ntp.h"
 
-
 // Configurações do Servidor NTP
 const char* servidorNTP = "a.st1.ntp.br"; // Servidor NTP para pesquisar a hora
 const int fusoHorario = -10800; // Fuso horário em segundos (-03h = -10800 seg)

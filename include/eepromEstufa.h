@@ -2,7 +2,8 @@
 #define _EEPROM_ESTUFA_
 
 #define EEPROM_SIZE               128
-#define OPERATION_MODE_ADDR      0
+
+#define OPERATION_MODE_ADDR       0
 #define LIGHT_STATE_ADDR          2
 #define LIGHT_SCHEDULE_ON_ADDR    4
 #define LIGHT_SCHEDULE_OFF_ADDR   36
@@ -20,4 +21,5 @@ void initVarFromEeprom();
 void saveToEeprom(uint8_t addr, uint8_t value);
 void saveStringToEeprom(uint8_t addr, String string);
 String readStringFromEeprom(uint8_t addr);
+
 #endif //_EEPROM_ESTUFA_
